@@ -1,12 +1,14 @@
 from sklearn import cluster
 from rdkit.Chem import ChemicalFeatures
 import math
+from pathlib import Path
 import numpy as np
+
 
 
 class Pharmacophore:
     def __init__(self, mol, gene):
-        self._fdef = "BaseFeatures.fdef"
+        self._fdef = str(Path('MAPex', 'BaseFeatures.fdef'))
         self._mol = mol
         self._gene = gene
         self._factory = ChemicalFeatures.BuildFeatureFactory(self._fdef)
@@ -16,15 +18,15 @@ class Pharmacophore:
     def _features(self):
         mol = self._mol
         acceptors = [
-            list(f.GetPos())
+            list(f.GetPos(confId = self._gene))
             for f in self._factory.GetFeaturesForMol(mol, includeOnly="Acceptor", confId=self._gene)
         ]
         donors = [
-            list(f.GetPos())
+            list(f.GetPos(confId = self._gene))
             for f in self._factory.GetFeaturesForMol(mol, includeOnly="Donor", confId=self._gene)
         ]
         hydrophobics = [
-            list(f.GetPos())
+            list(f.GetPos(confId = self._gene))
             for f in self._factory.GetFeaturesForMol(mol, includeOnly="Hydrophobe", confId=self._gene)
         ]
         return acceptors, donors, hydrophobics
@@ -89,7 +91,9 @@ class PharmComplex:
         return centr_list
 
     def create(self, distance=1, num_mols=None):
-        if num_mols is None:
+        if num_mols:
+            num_mols = num_mols
+        else:
             num_mols = self._num_mols
         feat_dict = self._feat_dict
         coords = {}
@@ -105,12 +109,13 @@ class PharmComplex:
         total = base_space + diff
         return " " * total
 
+
     def write(self):
         coord_dict = self._coords
         l = 0
         for k in coord_dict.keys():
             l = l + len(coord_dict[k])
-        f = open("pharmacophore.mol2", "w")
+        f = open(str(Path('examples', 'pharmacophore.mol2')), "w")
         f.write("@<TRIPOS>MOLECULE \npharmacophore\n")
         f.write("    " + str(l) + "    0\nSMALL \nNO_CHARGES \n@<TRIPOS>ATOM")
         n = 1

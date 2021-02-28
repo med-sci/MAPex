@@ -3,7 +3,7 @@ import random
 from tqdm.notebook import tqdm
 from statistics import stdev
 from statistics import mean
-
+from pathlib import Path
 
 class GA:
     def __init__(self, mols, n_inds, mutation_chance, generations, crippen=True, verbose = False):
@@ -167,7 +167,7 @@ class GA:
 
     @staticmethod
     def write(molecules, chromosome, file_name='molecules.sdf'):
-        w = SDWriter(file_name)
+        w = SDWriter(str(Path('examples', file_name)))
         for m, g in zip(molecules, chromosome):
             w.write(m, confId=g)
         w.close()
